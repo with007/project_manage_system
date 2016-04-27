@@ -48,12 +48,29 @@ processRouter.use(function timeLog(req, res, next) {
 });
 // 定义网站主页的路由
 
-processRouter.get('/', function (req, res) {
+processRouter.get('/login', function (req, res) {
 	res.render('process', { title: '进度管理' });
-	res.send('进度管理页面');
 });
+/*
+// 处理login路径的post请求
+processRouter.post('/login', function (req, res) {
+    console.log("%s", req.body.user);
+    connection.query('select * from user where user_name =  ' + req.body.user + ' and password= ' + req.body.pass  ,
+        function selectCb(err, results, fields) {
+        if (err) {
+            throw err;
+        }
+        
+        else if (results.length>0) {
+            res.json({ pass: 1 , type: results[0].type , area: results[0].area });
+        }
+        else
+            res.json({ pass: 0 });
+    }
 
-
+    );
+});
+*/
 
 // 匹配 /search 路径的请求
 //"search/2"以工程id查找工程检查项
@@ -67,16 +84,14 @@ processRouter.get('/search/2', function (req, res) {
 			console.code(err.code);
 		}
 		
-		if (results) {
-			for (var i = 0; i < results.length; i++) {
-				//res.send(results[i]);
-				res.json(results[i]);
+		else if (results) {
+			if(results.length>0)
+				res.send(results);
 			}
 		}
-	}
-	);
+	)}
 
-});
+);
 
 // 匹配 /search 路径的请求
 //"search/3"以进度项id查找进度信息
@@ -90,13 +105,11 @@ processRouter.get('/search/3', function (req, res) {
 			console.code(err.code);
 		}
 		
-		if (results) {
-			for (var i = 0; i < results.length; i++) {
-				//res.send(results[i]);
-				res.json(results[i]);
+		else if (results) {
+			if(results.length>0)
+				res.send(results);
 			}
 		}
-	}
 	);
 
 });
@@ -120,7 +133,7 @@ processRouter.post('/add/1', function (req, res) {
 		} 
 		
 		if (results) {
-			res.json(1);
+			res.send('添加成功');
 		}
 	}
 	);
@@ -134,7 +147,12 @@ processRouter.get('/delete/1', function (req, res) {
 	var k = Object.keys(url_info.query);
 	var temp = k[0] + '=' + url_info.query[k[0]];
 	for (var i = 1; i < k.length; i++) {
-		temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
+		if(k[i]=='id' || k[i]=='project_id' || k[i]=='state'){
+			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
+		}
+		else{
+			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
+		}
 	}
 	connection.query('delete FROM project_tocheck where ' + temp,
         function selectCb(err, results, fields) {
@@ -142,8 +160,9 @@ processRouter.get('/delete/1', function (req, res) {
 			console.log(err.code);
 		}
 		
-		if (results) {
-			res.send('deldete success');
+		else if (results) {
+			res.send(results);
+			//由results.affectedRows可以知道删除了多少行
 		}
 		
 	}
@@ -158,21 +177,24 @@ processRouter.get('/delete/2', function (req, res) {
 	var k = Object.keys(url_info.query);
 	var temp = k[0] + '=' + url_info.query[k[0]];
 	for (var i = 1; i < k.length; i++) {
-		temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
+		if(k[i]=='detail' || k[i]=='datetime'){
+			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
+		}
+		else{
+			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
+		}
 	}
 	connection.query('delete FROM project_check_info where ' + temp,
         function selectCb(err, results, fields) {
 		if (err) {
-			console.log(err.code);
+			console.log(err);
+			res.send(err.code);
 		}
-		
-		if (results) {
-			res.send('deldete success');
+		else if(results){
+			res.send(results);
+			//由results.affectedRows可以知道删除了多少行
 		}
-		
-	}
-	);
-
+	});
 });
 
 //“update/1”更新项目检查项
@@ -184,8 +206,9 @@ processRouter.post('/update/1', function (req, res) {
 			console.log(err.code);
 		}
 		
-		if (results) {
-			console.log("删除成功");
+		else if (results) {
+			console.log("delete success");
+			res.send('delete success');
 		}
 		
 	}
@@ -205,7 +228,7 @@ processRouter.post('/update/1', function (req, res) {
 			console.log(err);
 		}
 		
-		if (results) {
+		else if (results) {
 			console.log("更新成功");
 			res.send('update success');
 		}
@@ -222,25 +245,25 @@ processRouter.post('/update/2', function (req, res) {
 			console.log(err);
 		}
 		
-		if (results) {
-			console.log("删除成功");
+		else if (results) {
+			console.log("delete success");
 		}
 		
 	}
 
 	);
 	connection.query('insert into project_check_info values ( ' + req.body.id + ',' 
-                                                                                    + req.body.check_id + ',' 
-                                                                                    + req.body.user_id + ',' 
-                                                                                    + req.body.detail + ',' 
-                                                                                    + req.body.datetime + ')',
+                                                                                    + req.body.project_check_id + ',' 
+                                                                                    + req.body.user_id + ',"' 
+                                                                                    + req.body.detail + '","' 
+                                                                                    + req.body.datetime + '")',
         function selectCb(err, results, fields) {
 		if (err) {
 			console.log(err);
 			res.send(err);
 		}
 		
-		if (results) {
+		else if (results) {
 			var i;
 			var new_path = "./uploads/progress/" + req.body.check_id;
 			fs.mkdir(new_path, function (err) {

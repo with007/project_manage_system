@@ -40,26 +40,6 @@ console.log('进入数据库');
 //进入 指定的数据库
 
 
-/*已经在service.js中实现
-// 处理login路径的post请求
-app.post('/login', function (req, res) {
-    console.log("%s",req.body.user_name);
-    connection.query('select * from user where user_name =  ' + req.body.user_name + ' and password= ' + req.body.password  ,
-        function selectCb(err, results, fields) {
-            if (err) {
-                throw err;
-            }
-
-            if (results) {
-                res.json( {pass:1 , type:results[0].type , area: results[0].area } );
-            }
-            else
-                res.json({ pass: 0 });
-            }
-
-    );
-});
-*/
 app.get('/', function (req, res) {
     res.send('root');
     //TODO render 首页

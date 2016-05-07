@@ -73,12 +73,21 @@ processRouter.post('/login', function (req, res) {
 */
 
 // 匹配 /search 路径的请求
-//"search/2"以工程id查找工程检查项
-processRouter.get('/search/2', function (req, res) {
-	connection.query("use 项目管理系统");
+//"search/1"以工程id查找工程检查项
+processRouter.get('/search/1', function (req, res) {
 	var url_info = require('url').parse(req.url, true);
-	var data = require('querystring').stringify(url_info.query);
-	connection.query('SELECT * FROM project_tocheck where project_' + data,
+	
+	var k = Object.keys(url_info.query);
+	var temp = k[0] + '=' + url_info.query[k[0]];
+	for (var i = 1; i < k.length; i++) {
+		if(k[i]=='id' || k[i]=='project_id' || k[i]=='state'){
+			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
+		}
+		else{
+			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
+		}
+	}
+	connection.query('SELECT * FROM project_tocheck where ' + temp,
         function selectCb(err, results, fields) {
 		if (err) {
 			console.code(err.code);
@@ -94,12 +103,22 @@ processRouter.get('/search/2', function (req, res) {
 );
 
 // 匹配 /search 路径的请求
-//"search/3"以进度项id查找进度信息
-processRouter.get('/search/3', function (req, res) {
+//"search/2"以进度项id查找进度信息
+processRouter.get('/search/2', function (req, res) {
 	connection.query("use 项目管理系统");
 	var url_info = require('url').parse(req.url, true);
-	var data = require('querystring').stringify(url_info.query);
-	connection.query('SELECT * FROM project_check_info where project_check_' + data,
+	
+	var k = Object.keys(url_info.query);
+	var temp = k[0] + '=' + url_info.query[k[0]];
+	for (var i = 1; i < k.length; i++) {
+		if(k[i]=='id' || k[i]=='project_id' || k[i]=='state'){
+			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
+		}
+		else{
+			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
+		}
+	}
+	connection.query('SELECT * FROM project_check_info where ' + temp,
         function selectCb(err, results, fields) {
 		if (err) {
 			console.code(err.code);
@@ -191,7 +210,12 @@ processRouter.get('/delete/2', function (req, res) {
 			res.send(err.code);
 		}
 		else if(results){
-			res.send(results);
+			if(results.affectedRows==0){
+				res.send('no match record');
+			}
+			else{
+				res.send(results.affectedRows+' records has been deleted');
+			}
 			//由results.affectedRows可以知道删除了多少行
 		}
 	});
@@ -200,37 +224,26 @@ processRouter.get('/delete/2', function (req, res) {
 //“update/1”更新项目检查项
 processRouter.post('/update/1', function (req, res) {
 	
-	connection.query('delete FROM project_tocheck where project_id= ' + req.body.project_id,
-        function selectCb(err, results, fields) {
-		if (err) {
-			console.log(err.code);
-		}
-		
-		else if (results) {
-			console.log("delete success");
-			res.send('delete success');
-		}
-		
-	}
-
-	);
-	connection.query('insert into project_tocheck values ( ' + req.body.id + ',' 
-                                                                                    + req.body.project_id + ',' 
-                                                                                    + req.body.time + ',' 
-                                                                                    + req.body.type + ',' 
-                                                                                    + req.body.begin_time + ',' 
-                                                                                    + req.body.end_time + ',' 
-                                                                                    + req.body.target + ',' 
-                                                                                    + req.body.target_now + ',' 
-                                                                                    + req.body.state + ')',
+	connection.query('update project_tocheck set time="'     + req.body.time +  
+											'",type="'       + req.body.type +  
+											'",begin_time="' + req.body.begin_time +
+											'",end_time="'   + req.body.end_time +
+											'",target="'     + req.body.target + 
+											'",target_now="' + req.body.target_now +
+											'",state='       + req.body.state + 
+											' where id='     + req.body.id,
         function selectCb(err, results, fields) {
 		if (err) {
 			console.log(err);
 		}
 		
 		else if (results) {
-			console.log("更新成功");
-			res.send('update success');
+			if(results.affectedRows==0){
+				res.send('no match record');
+			}
+			else{
+				res.send(results.affectedRows+' records has been changed');
+			}
 		}
 	}
 	);
@@ -239,51 +252,22 @@ processRouter.post('/update/1', function (req, res) {
 //“update/2”更新进度信息
 processRouter.post('/update/2', function (req, res) {
 	
-	connection.query('delete FROM project_check_info where id= ' + req.body.id,
+	connection.query('update project_check_info set user_id='  + req.body.user_id +  
+											',detail="'        + req.body.detail +
+											'",datetime="'     + req.body.datetime +
+											'" where id='      + req.body.id,
         function selectCb(err, results, fields) {
 		if (err) {
 			console.log(err);
 		}
 		
 		else if (results) {
-			console.log("delete success");
-		}
-		
-	}
-
-	);
-	connection.query('insert into project_check_info values ( ' + req.body.id + ',' 
-                                                                                    + req.body.project_check_id + ',' 
-                                                                                    + req.body.user_id + ',"' 
-                                                                                    + req.body.detail + '","' 
-                                                                                    + req.body.datetime + '")',
-        function selectCb(err, results, fields) {
-		if (err) {
-			console.log(err);
-			res.send(err);
-		}
-		
-		else if (results) {
-			var i;
-			var new_path = "./uploads/progress/" + req.body.check_id;
-			fs.mkdir(new_path, function (err) {
-				if (err)
-					console.log(err);
-				else
-					console.log("目录创建成功");
-			});
-			for (i in req.files) {
-				fs.rename(req.files[i].path, new_path + '/' + req.files[i].filename, function (err) {
-					if (err) {
-						console.log(err);
-					}
-					else
-						console.log("文件移动成功");
-
-				});
+			if(results.affectedRows==0){
+				res.send('no match record');
 			}
-			console.log("更新成功");
-			res.send('update success');
+			else{
+				res.send(results.affectedRows+' records has been changed');
+			}
 		}
 	}
 	);

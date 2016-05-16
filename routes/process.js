@@ -47,18 +47,18 @@ processRouter.use(function timeLog(req, res, next) {
 	next();
 });
 // 定义网站主页的路由
-
+/*
 processRouter.get('/login', function (req, res) {
 	res.render('process', { title: '进度管理' });
 });
-/*
+*/
 // 处理login路径的post请求
 processRouter.post('/login', function (req, res) {
     console.log("%s", req.body.user);
     connection.query('select * from user where user_name =  ' + req.body.user + ' and password= ' + req.body.pass  ,
         function selectCb(err, results, fields) {
         if (err) {
-            throw err;
+            console.log(err);
         }
         
         else if (results.length>0) {
@@ -70,7 +70,7 @@ processRouter.post('/login', function (req, res) {
 
     );
 });
-*/
+
 
 // 匹配 /search 路径的请求
 //"search/1"以工程id查找工程检查项
@@ -79,6 +79,7 @@ processRouter.get('/search/1', function (req, res) {
 	
 	var k = Object.keys(url_info.query);
 	var temp = k[0] + '=' + url_info.query[k[0]];
+	/*
 	for (var i = 1; i < k.length; i++) {
 		if(k[i]=='id' || k[i]=='project_id' || k[i]=='state'){
 			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
@@ -87,6 +88,22 @@ processRouter.get('/search/1', function (req, res) {
 			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
 		}
 	}
+	*/
+	
+	async.eachSeries(k, function(key,callback){
+      console.log(key);
+	  	if(key=='id' || key=='project_id' || key=='state'){
+			temp += ' and ' + key + '=' + url_info.query[key];
+		}
+		else{
+			temp += ' and ' + key + '="' + url_info.query[key]+'"';
+		}
+    },function(err){
+      //最后一定会执行，在此处。
+      res.json(k);
+      console.log(err);
+    });
+	
 	connection.query('SELECT * FROM project_tocheck where ' + temp,
         function selectCb(err, results, fields) {
 		if (err) {
@@ -110,14 +127,30 @@ processRouter.get('/search/2', function (req, res) {
 	
 	var k = Object.keys(url_info.query);
 	var temp = k[0] + '=' + url_info.query[k[0]];
+	/*
 	for (var i = 1; i < k.length; i++) {
-		if(k[i]=='id' || k[i]=='project_id' || k[i]=='state'){
+		if(k[i]=='id' || k[i]=='project_id' || k[i]=='user_id'){
 			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
 		}
 		else{
 			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
 		}
 	}
+	*/
+	async.eachSeries(k, function(key,callback){
+      console.log(key);
+		if(k[i]=='detail' || k[i]=='datetime'){
+			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
+		}
+		else{
+			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
+		}
+    },function(err){
+      //最后一定会执行，在此处。
+      res.json(k);
+      console.log(err);
+    });
+	
 	connection.query('SELECT * FROM project_check_info where ' + temp,
         function selectCb(err, results, fields) {
 		if (err) {
@@ -165,6 +198,7 @@ processRouter.get('/delete/1', function (req, res) {
 	
 	var k = Object.keys(url_info.query);
 	var temp = k[0] + '=' + url_info.query[k[0]];
+	/*
 	for (var i = 1; i < k.length; i++) {
 		if(k[i]=='id' || k[i]=='project_id' || k[i]=='state'){
 			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
@@ -173,6 +207,22 @@ processRouter.get('/delete/1', function (req, res) {
 			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
 		}
 	}
+	*/
+	
+	async.eachSeries(k, function(key,callback){
+      console.log(key);
+	  	if(key=='id' || key=='project_id' || key=='state'){
+			temp += ' and ' + key + '=' + url_info.query[key];
+		}
+		else{
+			temp += ' and ' + key + '="' + url_info.query[key]+'"';
+		}
+    },function(err){
+      //最后一定会执行，在此处。
+      res.json(k);
+      console.log(err);
+    });
+	
 	connection.query('delete FROM project_tocheck where ' + temp,
         function selectCb(err, results, fields) {
 		if (err) {
@@ -195,6 +245,7 @@ processRouter.get('/delete/2', function (req, res) {
 	
 	var k = Object.keys(url_info.query);
 	var temp = k[0] + '=' + url_info.query[k[0]];
+	/*
 	for (var i = 1; i < k.length; i++) {
 		if(k[i]=='detail' || k[i]=='datetime'){
 			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
@@ -203,6 +254,20 @@ processRouter.get('/delete/2', function (req, res) {
 			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
 		}
 	}
+	*/
+	async.eachSeries(k, function(key,callback){
+      console.log(key);
+	  	if(key=='detail' || key=='datetime'){
+			temp += ' and ' + k[i] + '="' + url_info.query[k[i]]+'"';
+		}
+		else{
+			temp += ' and ' + k[i] + '=' + url_info.query[k[i]];
+		}
+    },function(err){
+      //最后一定会执行，在此处。
+      res.json(k);
+      console.log(err);
+    });
 	connection.query('delete FROM project_check_info where ' + temp,
         function selectCb(err, results, fields) {
 		if (err) {

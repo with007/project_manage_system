@@ -14,12 +14,13 @@ var users = require('./routes/users');
 var sqlConfig = require('./mysqlConfig');
 var app = express();
 //引入服务商管理 路由
-var serviceRouter = require('./routes/service');
+//var serviceRouter = require('./routes/service');
 //引入进度管理路由
 var processRouter = require('./routes/process');
-
+var rootRouter = require('./routes/root');
 app.use(bodyParser.urlencoded({ limit: '10mb' , extended: true }))
 app.use(bodyParser.json({limit: '10mb'}))
+app.use(express.static(path.join(__dirname,'/uploads')));
 //app.use(cpUpload);
 // console.dir(sqlConfig)
 var mysql = require('mysql');
@@ -72,9 +73,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //路由关联
 //挂载服务商管理路由句柄
-app.use('/s', serviceRouter);
+//app.use('/s', serviceRouter);
 //挂载进度管理路由句柄
 app.use('/p',processRouter);
+app.use('/r',rootRouter);
 app.use('/', routes);
 app.use('/users', users);
 
